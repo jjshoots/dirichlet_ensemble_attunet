@@ -3,7 +3,7 @@
 ## Installation
 
 ```
-pip3 install git+ssh://git@github.com:jjshoots/dirichlet_ensemble_attunet.git#main
+pip3 install git+https://github.com/jjshoots/dirichlet_ensemble_attunet.git
 ```
 
 ## Usage
