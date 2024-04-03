@@ -24,7 +24,9 @@ def count_contours(torch_image: torch.Tensor, minimum_area: int) -> np.ndarray:
 
 
 def compute_precision_recall_contours(
-    prediction: torch.Tensor, label: torch.Tensor, minimum_area: int = 0,
+    prediction: torch.Tensor,
+    label: torch.Tensor,
+    minimum_area: int = 0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Computes the contourwise channel-level precision and recall of a prediction against a label.
 

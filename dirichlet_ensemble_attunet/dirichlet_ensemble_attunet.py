@@ -122,7 +122,9 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
 
         # compute the scale for biasing positive against negative predictions
         # the result is shape (B, C, 1, 1)
-        total_evidence = torch.sum(target, dim=[2, 3], keepdim=True, dtype=torch.float) + 1e-6
+        total_evidence = (
+            torch.sum(target, dim=[2, 3], keepdim=True, dtype=torch.float) + 1e-6
+        )
         evidence_scale = (target.shape[2] * target.shape[3] / total_evidence) - 1.0
         evidence_scale = torch.clamp(evidence_scale, 0.0, 25565.0).to(target.device)
 
