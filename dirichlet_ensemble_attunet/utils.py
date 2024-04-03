@@ -4,7 +4,7 @@ import torch
 from wingman.utils import cpuize
 
 
-def _count_contours(torch_image: torch.Tensor) -> np.ndarray:
+def count_contours(torch_image: torch.Tensor) -> np.ndarray:
     """Finds the number of parent-only contours given a [C, H, W] torch Tensor."""
     assert len(torch_image.shape) == 3
 
@@ -49,9 +49,9 @@ def compute_precision_recall_contours(
     joint = prediction & label
 
     # count metrics for each map
-    TP = np.clip(_count_contours(joint), a_min=0, a_max=None)
-    FP = np.clip(_count_contours(guess) - TP, a_min=0, a_max=None)
-    FN = np.clip(_count_contours(truth) - TP, a_min=0, a_max=None)
+    TP = np.clip(count_contours(joint), a_min=0, a_max=None)
+    FP = np.clip(count_contours(guess) - TP, a_min=0, a_max=None)
+    FN = np.clip(count_contours(truth) - TP, a_min=0, a_max=None)
 
     # compute precision recall
     precision = TP / (TP + FP + 1e-6)
