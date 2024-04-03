@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dirichlet_ensemble_attunet"
-version = "0.4.1"
+version = "0.4.2"
 description = ""
 authors = ["Jet <taijunjet@hotmail.com>"]
 
