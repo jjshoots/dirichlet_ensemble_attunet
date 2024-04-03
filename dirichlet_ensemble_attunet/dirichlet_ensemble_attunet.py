@@ -3,21 +3,23 @@ from __future__ import annotations
 import torch
 import torch.nn.functional as F
 
+from dirichlet_ensemble_attunet.basic_blocks import activation_types
 from dirichlet_ensemble_attunet.ensemble_att_unet import EnsembleAttUNet
 
 
 class DirichletEnsembleAttUNet(EnsembleAttUNet):
-    """DirichletEnsembleAttUNet.
-    """
+    """DirichletEnsembleAttUNet."""
 
     def __init__(
         self,
+        *,
         in_channels: int,
         out_channels: int,
         inner_channels: list[int],
         att_num_heads: int,
+        activation: activation_types,
+        residual: bool,
         num_ensemble: int,
-        residual: bool = True,
     ):
         """Dirichlet Ensemble Attention U Net.
 
@@ -26,16 +28,18 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
             out_channels (int): number of channels at the output
             inner_channels (list[int]): channel descriptions for the downsampling conv net
             att_num_heads (int): number of attention heads per attention module
-            num_ensemble (int): number of networks in the ensemble
+            activation (activation_types): type of activation to use in the downscaling and upscaling layers
             residual (bool): whether to have residual connections
+            num_ensemble (int): number of networks in the ensemble
         """
         super().__init__(
             in_channels=in_channels,
             out_channels=out_channels * 2,
             inner_channels=inner_channels,
             att_num_heads=att_num_heads,
-            num_ensemble=num_ensemble,
+            activation=activation,
             residual=residual,
+            num_ensemble=num_ensemble,
         )
         self.out_channels = out_channels
 
@@ -79,7 +83,9 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
         # the output is [B, C, H, W] in {0, 1}
         return (x[0] > x[1]).float().mean(dim=0) >= prediction_threshold
 
-    def compute_pixelwise_loss(self, x: torch.Tensor, target: torch.Tensor, peak_distance: float = 16.0) -> torch.Tensor:
+    def compute_pixelwise_loss(
+        self, x: torch.Tensor, target: torch.Tensor, peak_distance: float = 16.0
+    ) -> torch.Tensor:
         """Computes a pixelwise loss against a target.
 
         Args:
@@ -90,8 +96,12 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
         Returns:
             torch.Tensor: pixelwise loss of shape (B, C, H, W).
         """
-        assert target.shape[-2:] == x.shape[-2:], f"The target's spatial shape {target.shape[-2:]} should be the same as the input's {x.shape[-2:]}."
-        assert target.dtype == torch.bool, f"The target should be a boolean tensor, got {target.dtype}."
+        assert (
+            target.shape[-2:] == x.shape[-2:]
+        ), f"The target's spatial shape {target.shape[-2:]} should be the same as the input's {x.shape[-2:]}."
+        assert (
+            target.dtype == torch.bool
+        ), f"The target should be a boolean tensor, got {target.dtype}."
 
         # the output of this is [pos_neg, num_ensemble, B, C, H, W] in [0, +inf]
         y = self(x)

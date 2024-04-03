@@ -4,12 +4,12 @@ import torch
 import torch.nn as nn
 
 from dirichlet_ensemble_attunet.attention import SelfAttention
-from dirichlet_ensemble_attunet.basic_blocks import Down, Plain, Up
+from dirichlet_ensemble_attunet.basic_blocks import (Down, Plain, Up,
+                                                     activation_types)
 
 
 class AttUNet(nn.Module):
-    """AttUNet.
-    """
+    """AttUNet."""
 
     def __init__(
         self,
@@ -17,7 +17,8 @@ class AttUNet(nn.Module):
         out_channels: int,
         inner_channels: list[int],
         att_num_heads: int,
-        residual: bool = True,
+        activation: activation_types,
+        residual: bool,
     ):
         """A simple Attention UNet.
 
@@ -26,6 +27,7 @@ class AttUNet(nn.Module):
             out_channels (int): number of channels at the output
             inner_channels (list[int]): channel descriptions for the downsampling conv net
             att_num_heads (int): number of attention heads per attention module
+            activation (activation_types): type of activation to use in the downscaling and upscaling layers
             residual (bool): whether to have residual connections
         """
         super().__init__()
@@ -44,12 +46,20 @@ class AttUNet(nn.Module):
 
         # dynamically allocate the down and up list
         for i in range(len(inner_channels) - 1):
-            self.down_list.append(Down(inner_channels[i], inner_channels[i + 1]))
-            self.up_list.append(Up(inner_channels[-i - 1], inner_channels[-i - 2]))
+            self.down_list.append(
+                Down(inner_channels[i], inner_channels[i + 1], activation)
+            )
+            self.up_list.append(
+                Up(inner_channels[-i - 1], inner_channels[-i - 2], activation)
+            )
 
         # init attention modules
         if att_num_heads:
-            self.attention = SelfAttention(inner_channels[-1], att_num_heads, context_length=8192)
+            self.attention = SelfAttention(
+                embed_dim=inner_channels[-1],
+                num_heads=att_num_heads,
+                context_length=8192,
+            )
         else:
             self.attention = lambda x: x
 

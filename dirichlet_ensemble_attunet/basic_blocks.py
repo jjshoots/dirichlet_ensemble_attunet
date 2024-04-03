@@ -1,6 +1,10 @@
+from typing import Literal
+
 import torch
 from torch import nn
 from wingman import NeuralBlocks
+
+activation_types = Literal["identity", "relu", "lrelu", "tanh"]
 
 
 class MeanFilter(nn.Module):
@@ -40,7 +44,9 @@ class MeanFilter(nn.Module):
         return self.mean_filter(x)
 
 
-def Plain(in_channel, out_channel) -> torch.nn.Module:
+def Plain(
+    in_channel: int, out_channel: int, activation: activation_types = "identity"
+) -> torch.nn.Module:
     """Just a plain ol' convolution layer.
 
     Args:
@@ -53,14 +59,16 @@ def Plain(in_channel, out_channel) -> torch.nn.Module:
     channels = [in_channel, out_channel]
     kernels = [3]
     pooling = [0]
-    activation = ["identity"] * len(kernels)
+    _activation = [activation] * len(kernels)
 
     return NeuralBlocks.generate_conv_stack(
-        channels, kernels, pooling, activation, norm="batch"
+        channels, kernels, pooling, _activation, norm="batch"
     )
 
 
-def Down(in_channel, out_channel) -> torch.nn.Module:
+def Down(
+    in_channel: int, out_channel: int, activation: activation_types = "relu"
+) -> torch.nn.Module:
     """Convolutional downscaler, downscales input by 2.
 
     Args:
@@ -73,14 +81,16 @@ def Down(in_channel, out_channel) -> torch.nn.Module:
     channels = [in_channel, out_channel]
     kernels = [3]
     pooling = [2]
-    activation = ["relu"] * len(kernels)
+    _activation = [activation] * len(kernels)
 
     return NeuralBlocks.generate_conv_stack(
-        channels, kernels, pooling, activation, norm="batch"
+        channels, kernels, pooling, _activation, norm="batch"
     )
 
 
-def Up(in_channel, out_channel) -> torch.nn.Module:
+def Up(
+    in_channel: int, out_channel: int, activation: activation_types = "relu"
+) -> torch.nn.Module:
     """Convolutional upscaler, upscales input by 2.
 
     Args:
@@ -94,8 +104,8 @@ def Up(in_channel, out_channel) -> torch.nn.Module:
     kernels = [4]
     padding = [1]
     stride = [2]
-    activation = ["relu"] * len(kernels)
+    _activation = [activation] * len(kernels)
 
     return NeuralBlocks.generate_deconv_stack(
-        channels, kernels, padding, stride, activation, norm="batch"
+        channels, kernels, padding, stride, _activation, norm="batch"
     )

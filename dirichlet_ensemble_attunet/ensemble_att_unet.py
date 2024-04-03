@@ -4,11 +4,11 @@ import torch
 import torch.nn as nn
 
 from dirichlet_ensemble_attunet.att_unet import AttUNet
+from dirichlet_ensemble_attunet.basic_blocks import activation_types
 
 
 class EnsembleAttUNet(nn.Module):
-    """EnsembleAttUNet.
-    """
+    """EnsembleAttUNet."""
 
     def __init__(
         self,
@@ -16,8 +16,9 @@ class EnsembleAttUNet(nn.Module):
         out_channels: int,
         inner_channels: list[int],
         att_num_heads: int,
+        activation: activation_types,
+        residual: bool,
         num_ensemble: int,
-        residual: bool = True,
     ):
         """A simple Attention UNet.
 
@@ -26,8 +27,9 @@ class EnsembleAttUNet(nn.Module):
             out_channels (int): number of channels at the output
             inner_channels (list[int]): channel descriptions for the downsampling conv net
             att_num_heads (int): number of attention heads per attention module
-            num_ensemble (int): number of networks in the ensemble
+            activation (activation_types): type of activation to use in the downscaling and upscaling layers
             residual (bool): whether to have residual connections
+            num_ensemble (int): number of networks in the ensemble
         """
         super().__init__()
 
@@ -38,6 +40,7 @@ class EnsembleAttUNet(nn.Module):
                     out_channels,
                     inner_channels,
                     att_num_heads,
+                    activation,
                     residual,
                 )
                 for _ in range(num_ensemble)

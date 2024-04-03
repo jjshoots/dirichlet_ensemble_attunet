@@ -1,4 +1,5 @@
 import torch
+
 from dirichlet_ensemble_attunet import DirichletEnsembleAttUNet
 
 if __name__ == "__main__":
@@ -33,4 +34,3 @@ if __name__ == "__main__":
     # the output is a pixelwise loss of shape [B, C, H, W]
     pixelwise_loss = model.compute_pixelwise_loss(input, target)
     print(pixelwise_loss.shape)
-
