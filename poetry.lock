@@ -330,6 +330,25 @@ optional = false
 python-versions = ">=3"
 
 [[package]]
+name = "opencv-python"
+version = "4.9.0.80"
+description = "Wrapper package for OpenCV python bindings."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+numpy = [
+    {version = ">=1.21.2", markers = "python_version >= \"3.10\""},
+    {version = ">=1.21.4", markers = "python_version >= \"3.10\" and platform_system == \"Darwin\""},
+    {version = ">=1.23.5", markers = "python_version >= \"3.11\""},
+    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
+    {version = ">=1.19.3", markers = "python_version >= \"3.6\" and platform_system == \"Linux\" and platform_machine == \"aarch64\" or python_version >= \"3.9\""},
+    {version = ">=1.17.0", markers = "python_version >= \"3.7\""},
+    {version = ">=1.17.3", markers = "python_version >= \"3.8\""},
+]
+
+[[package]]
 name = "packaging"
 version = "24.0"
 description = "Core utilities for Python packages"
@@ -621,7 +640,7 @@ sweeps = ["sweeps (>=0.2.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "f2d072becac343f0325b20f9036c4b618e243a211a5d9b77c955a12e4bb50c8d"
+content-hash = "6e168d290eaf211e3376d9dbdb12b21a0445b8deee29f3e3f8b5b12a3ff54ebe"
 
 [metadata.files]
 appdirs = []
@@ -655,6 +674,7 @@ nvidia-cusparse-cu12 = []
 nvidia-nccl-cu12 = []
 nvidia-nvjitlink-cu12 = []
 nvidia-nvtx-cu12 = []
+opencv-python = []
 packaging = []
 pluggy = []
 protobuf = []
