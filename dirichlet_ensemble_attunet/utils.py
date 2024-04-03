@@ -4,7 +4,7 @@ import torch
 from wingman.utils import cpuize
 
 
-def count_contours(torch_image: torch.Tensor) -> np.ndarray:
+def count_contours(torch_image: torch.Tensor, minimum_area: int) -> np.ndarray:
     """Finds the number of parent-only contours given a [C, H, W] torch Tensor."""
     assert len(torch_image.shape) == 3
 
@@ -17,13 +17,14 @@ def count_contours(torch_image: torch.Tensor) -> np.ndarray:
         contours, _ = cv2.findContours(
             image[i], cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
+        contours = [c for c in contours if cv2.contourArea(c) > minimum_area]
         num_contours.append(len(contours))
 
     return np.array(num_contours)
 
 
 def compute_precision_recall_contours(
-    prediction: torch.Tensor, label: torch.Tensor
+    prediction: torch.Tensor, label: torch.Tensor, minimum_area: int = 0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Computes the contourwise channel-level precision and recall of a prediction against a label.
 
@@ -31,8 +32,9 @@ def compute_precision_recall_contours(
     computes the precision and recall of the prediction against the label along the channel dimension.
 
     Args:
-        prediction (torch.Tensor): prediction
-        label (torch.Tensor): label
+        prediction (torch.Tensor): prediction of shape (C, H, W).
+        label (torch.Tensor): label of shape (C, H, W).
+        minimum_area (int): minimum area overlap of a contour in pixels to be considered a true positive.
 
     Returns:
         tuple[np.ndarray, np.ndarray]: two (C) long vectors for precision and recall.
@@ -49,9 +51,9 @@ def compute_precision_recall_contours(
     joint = prediction & label
 
     # count metrics for each map
-    TP = np.clip(count_contours(joint), a_min=0, a_max=None)
-    FP = np.clip(count_contours(guess) - TP, a_min=0, a_max=None)
-    FN = np.clip(count_contours(truth) - TP, a_min=0, a_max=None)
+    TP = np.clip(count_contours(joint, minimum_area), a_min=0, a_max=None)
+    FP = np.clip(count_contours(guess, minimum_area) - TP, a_min=0, a_max=None)
+    FN = np.clip(count_contours(truth, minimum_area) - TP, a_min=0, a_max=None)
 
     # compute precision recall
     precision = TP / (TP + FP + 1e-6)
