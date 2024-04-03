@@ -95,7 +95,10 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
         return (x[0] > x[1]).float().mean(dim=0) >= prediction_threshold
 
     def compute_pixelwise_loss(
-        self, x: torch.Tensor, target: torch.Tensor, peak_distance: float = 16.0
+        self,
+        x: torch.Tensor,
+        target: torch.Tensor,
+        peak_distance: float = 16.0,
     ) -> torch.Tensor:
         """Computes a pixelwise loss against a target.
 
@@ -117,15 +120,23 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
         # the output of this is [pos_neg, num_ensemble, B, C, H, W] in [0, +inf]
         y = self(x)
 
+        # compute the scale for biasing positive against negative predictions
+        # the result is shape (B, C, 1, 1)
+        total_evidence = torch.sum(target, dim=[2, 3], keepdim=True, dtype=torch.float) + 1e-6
+        evidence_scale = (target.shape[2] * target.shape[3] / total_evidence) - 1.0
+        evidence_scale = torch.clamp(evidence_scale, 0.0, 25565.0).to(target.device)
+
+        # fmt: off
         # the ensemble loss is [num_ensemble, B, C, H, W]
         ensemble_loss = (
             # this serves to keep evidence low
             torch.log(y[0] + y[1])
             # this increases positive evidence if we need it to be positive, but only if there is distance available
-            - torch.log(y[0]) * target * (y[0] < y[1] + peak_distance)
+            - (torch.log(y[0]) * target * (y[0] < y[1] + peak_distance) * evidence_scale)
             # this increases negative evidence if we need it to be negative, but only if there is distance available
-            - torch.log(y[1]) * ~target * (y[1] < y[0] + peak_distance)
+            - (torch.log(y[1]) * ~target * (y[1] < y[0] + peak_distance))
         )
+        # fmt: on
 
         # take the mean over the ensemble dimension, the resulting output is [B, C, H, W]
         return torch.mean(ensemble_loss, dim=0)
