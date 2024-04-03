@@ -46,6 +46,14 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
         )
         self.out_channels = out_channels
 
+        # count total number of parameters
+        total_params = 0
+        for _, parameter in self.named_parameters():
+            if not parameter.requires_grad:
+                continue
+            total_params += parameter.numel()
+        print(f"Model has {total_params} parameters.")
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """The forward function.
 
