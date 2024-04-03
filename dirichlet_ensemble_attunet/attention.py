@@ -18,6 +18,7 @@ class SelfAttention(nn.Module):
             num_heads (int): the number of heads in the model
             context_length (int): maximum context length allowable
         """
+        assert num_heads > 0
         super().__init__()
 
         self.embed_dim = embed_dim

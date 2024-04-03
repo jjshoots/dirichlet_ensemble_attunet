@@ -17,6 +17,7 @@ class AttUNet(nn.Module):
         out_channels: int,
         inner_channels: list[int],
         att_num_heads: int,
+        att_num_layers: int,
         activation: activation_types,
         residual: bool,
     ):
@@ -27,9 +28,14 @@ class AttUNet(nn.Module):
             out_channels (int): number of channels at the output
             inner_channels (list[int]): channel descriptions for the downsampling conv net
             att_num_heads (int): number of attention heads per attention module
+            att_num_layers (int): number of attention layers in the attention module
             activation (activation_types): type of activation to use in the downscaling and upscaling layers
             residual (bool): whether to have residual connections
         """
+        assert in_channels > 0
+        assert out_channels > 0
+        assert all([c > 0 for c in inner_channels])
+        assert att_num_layers > 0
         super().__init__()
 
         # size of image must be multiples of this number
@@ -54,11 +60,16 @@ class AttUNet(nn.Module):
             )
 
         # init attention modules
-        if att_num_heads:
-            self.attention = SelfAttention(
-                embed_dim=inner_channels[-1],
-                num_heads=att_num_heads,
-                context_length=8192,
+        if att_num_heads > 0:
+            self.attention = nn.Sequential(
+                *(
+                    SelfAttention(
+                        embed_dim=inner_channels[-1],
+                        num_heads=att_num_heads,
+                        context_length=8192,
+                    )
+                    for _ in range(att_num_layers)
+                )
             )
         else:
             self.attention = lambda x: x

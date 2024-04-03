@@ -17,6 +17,7 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
         out_channels: int,
         inner_channels: list[int],
         att_num_heads: int,
+        att_num_layers: int,
         activation: activation_types,
         residual: bool,
         num_ensemble: int,
@@ -28,6 +29,7 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
             out_channels (int): number of channels at the output
             inner_channels (list[int]): channel descriptions for the downsampling conv net
             att_num_heads (int): number of attention heads per attention module
+            att_num_layers (int): number of attention layers in the attention module
             activation (activation_types): type of activation to use in the downscaling and upscaling layers
             residual (bool): whether to have residual connections
             num_ensemble (int): number of networks in the ensemble
@@ -37,6 +39,7 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
             out_channels=out_channels * 2,
             inner_channels=inner_channels,
             att_num_heads=att_num_heads,
+            att_num_layers=att_num_layers,
             activation=activation,
             residual=residual,
             num_ensemble=num_ensemble,
