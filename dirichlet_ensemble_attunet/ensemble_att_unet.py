@@ -80,8 +80,9 @@ class EnsembleAttUNet(nn.Module):
         Returns:
             torch.Tensor: pixelwise loss of shape (B, C, H, W).
         """
+        y = self(x).expand(len(self.models), -1, -1, -1, -1)
         loss = func.binary_cross_entropy_with_logits(
-            input=self(x),
+            input=y,
             target=target,
             reduction="none",
         )
