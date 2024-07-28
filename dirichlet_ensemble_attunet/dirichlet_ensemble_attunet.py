@@ -79,12 +79,15 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
         return x
 
     def binarize(
-        self, x: torch.Tensor, prediction_threshold: float = 1.0
+        self,
+        y: torch.Tensor,
+        prediction_threshold: float = 1.0,
+        **kwargs,
     ) -> torch.Tensor:
         """Converts an input of (pos_neg, num_ensemble, B, C, H, W) into (B, C, H, W) in {0, 1}.
 
         Args:
-            x (torch.Tensor): input of (pos_neg, num_ensemble, B, C, H, W) in [0, +inf].
+            y (torch.Tensor): input of (pos_neg, num_ensemble, B, C, H, W) in [0, +inf].
             prediction_threshold (float): proportion of `num_ensemble` that predicts True for the resulting output pixel to be True.
 
         Returns:
@@ -92,7 +95,7 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
         """
         # input x should be [pos_neg, num_ensemble, B, C, H, W]
         # the output is [B, C, H, W] in {0, 1}
-        return (x[0] > x[1]).float().mean(dim=0) >= prediction_threshold
+        return (y[0] > y[1]).float().mean(dim=0) >= prediction_threshold
 
     def compute_uncertainty_map(self, y: torch.Tensor) -> torch.Tensor:
         """Computes the uncertainty map given the output of the model.
@@ -118,6 +121,7 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
         x: torch.Tensor,
         target: torch.Tensor,
         peak_distance: float = 16.0,
+        **kwargs,
     ) -> torch.Tensor:
         """Computes a pixelwise loss against a target.
 

@@ -67,17 +67,26 @@ class EnsembleAttUNet(nn.Module):
         return torch.stack([f(x) for f in self.models], dim=0)
 
     def binarize(
-        self, x: torch.Tensor, prediction_threshold: float = 1.0
+        self,
+        y: torch.Tensor,
+        **kwargs,
     ) -> torch.Tensor:
         """Converts an input of (num_ensemble, B, C, H, W) into (B, C, H, W) in {0, 1}.
 
         Args:
-            x (torch.Tensor): input of (num_ensemble, B, C, H, W) in [-inf, +inf].
-            prediction_threshold (float): proportion of `num_ensemble` that predicts True for the resulting output pixel to be True.
+            y (torch.Tensor): input of (num_ensemble, B, C, H, W) in [-inf, +inf].
 
         Returns:
             torch.Tensor: output of (B, C, H, W) in {0, 1}, the dtype is Boolean.
         """
+        # sum over num_ensemble dimension, shape is now (B, C, H, W)
+        logits = y.sum(dim=0)
+
+        # form the blank and just binarize over C dim
+        result = torch.zeros_like(logits, dtype=torch.bool)
+        result[logits.argmax(dim=-3)] = True
+        return result
+
 
     def compute_uncertainty_map(self, y: torch.Tensor) -> torch.Tensor:
         """Computes the uncertainty map given the output of the model.
@@ -97,14 +106,14 @@ class EnsembleAttUNet(nn.Module):
         self,
         x: torch.Tensor,
         target: torch.Tensor,
-        peak_distance: float = 0.0,
+        **kwargs,
     ) -> torch.Tensor:
         """Computes a pixelwise BCE loss against a target.
 
         Args:
             x (torch.Tensor): input of shape (B, C, H, W).
             target (torch.Tensor): boolean target of shape (B, C, H, W).
-            peak_distance (float): not used.
+            **kwargs:
 
         Returns:
             torch.Tensor: pixelwise loss of shape (B, C, H, W).
