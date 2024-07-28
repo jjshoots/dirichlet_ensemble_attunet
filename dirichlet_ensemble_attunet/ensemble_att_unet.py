@@ -83,10 +83,14 @@ class EnsembleAttUNet(nn.Module):
         logits = y.sum(dim=0)
 
         # form the blank and just binarize over C dim
-        result = func.one_hot(
-            logits.argmax(dim=-3),
-            num_classes=logits.shape[-3],
-        ).permute(0, 3, 1, 2).to(dtype=torch.bool)
+        result = (
+            func.one_hot(
+                logits.argmax(dim=-3),
+                num_classes=logits.shape[-3],
+            )
+            .permute(0, 3, 1, 2)
+            .to(dtype=torch.bool)
+        )
         return result
 
     def compute_uncertainty_map(self, y: torch.Tensor) -> torch.Tensor:
@@ -119,10 +123,13 @@ class EnsembleAttUNet(nn.Module):
         Returns:
             torch.Tensor: pixelwise loss of shape (B, C, H, W).
         """
-        y = self(x).expand(len(self.models), -1, -1, -1, -1)
         loss = func.binary_cross_entropy_with_logits(
-            input=y,
-            target=target.to(dtype=torch.float32, device=y.device),
+            input=self(x),
+            target=(
+                target
+                .expand(len(self.models), -1, -1, -1, -1)
+                .to(dtype=torch.float32, device=x.device)
+            ),
             reduction="none",
         )
         return loss.mean(dim=0)

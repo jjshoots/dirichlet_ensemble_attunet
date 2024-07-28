@@ -101,7 +101,7 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
         """Computes the uncertainty map given the output of the model.
 
         Args:
-            y (torch.Tensor): y of shape (B, C, H, W) in [0, +inf].
+            y (torch.Tensor): y of shape (pos_neg, num_ensemble, B, C, H, W) in [0, +inf].
 
         Returns:
             torch.Tensor: pixelwise uncertainty of shape (B, C, H, W) in [0, 1].
