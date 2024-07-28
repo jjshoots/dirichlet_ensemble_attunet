@@ -83,10 +83,11 @@ class EnsembleAttUNet(nn.Module):
         logits = y.sum(dim=0)
 
         # form the blank and just binarize over C dim
-        result = torch.zeros_like(logits, dtype=torch.bool)
-        result[logits.argmax(dim=-3)] = True
+        result = func.one_hot(
+            logits.argmax(dim=-3),
+            num_classes=logits.shape[-3],
+        ).permute(0, 3, 1, 2)
         return result
-
 
     def compute_uncertainty_map(self, y: torch.Tensor) -> torch.Tensor:
         """Computes the uncertainty map given the output of the model.
