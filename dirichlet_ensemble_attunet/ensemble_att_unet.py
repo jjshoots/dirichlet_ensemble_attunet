@@ -86,7 +86,7 @@ class EnsembleAttUNet(nn.Module):
         result = func.one_hot(
             logits.argmax(dim=-3),
             num_classes=logits.shape[-3],
-        ).permute(0, 3, 1, 2)
+        ).permute(0, 3, 1, 2).to(dtype=torch.bool)
         return result
 
     def compute_uncertainty_map(self, y: torch.Tensor) -> torch.Tensor:
