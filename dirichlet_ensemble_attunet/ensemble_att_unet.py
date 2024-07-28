@@ -101,7 +101,7 @@ class EnsembleAttUNet(nn.Module):
         # uncertainty is defined as
         # (sum(p_i ln p_i) / log(num_ensemble)) for i \in num_ensemble
         probs = func.softmax(y, dim=0)
-        return (probs * probs.log()).sum(dim=0) / math.log(probs.shape[0])
+        return -(probs * probs.log()).sum(dim=0) / math.log(probs.shape[0])
 
     def compute_pixelwise_loss(
         self,
