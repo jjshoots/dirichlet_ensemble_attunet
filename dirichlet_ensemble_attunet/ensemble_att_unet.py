@@ -102,10 +102,22 @@ class EnsembleAttUNet(nn.Module):
         Returns:
             torch.Tensor: pixelwise uncertainty of shape (B, C, H, W) in [0, 1].
         """
+        assert self.y.shape[0] > 1, "Can't perform uncertainty calculation with only 1 ensemble!"
+
+        # convert each model in the ensemble's prediction to one hot
+        one_hots = torch.stack(
+            [self.binarize(sub_y[None, ...]) for sub_y in y],
+            dim=0,
+        )
+        # take the mean over the ensemble dimension
+        probs = one_hots.to(dtype=torch.float32).mean(dim=0) + 1e-5
         # uncertainty is defined as
         # (sum(p_i ln p_i) / log(num_ensemble)) for i \in num_ensemble
-        probs = func.softmax(y, dim=0)
-        return -(probs * probs.log()).sum(dim=0) / math.log(probs.shape[0])
+        result = -(probs * probs.log()).sum(dim=0) / math.log(y.shape[0])
+
+        # the 1e-5 above introduces some negative values, we need to fix them here
+        result = torch.clamp_min_(result, min=0.0)
+        return result
 
     def compute_pixelwise_loss(
         self,
