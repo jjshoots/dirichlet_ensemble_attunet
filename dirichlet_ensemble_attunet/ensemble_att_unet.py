@@ -126,9 +126,9 @@ class EnsembleAttUNet(nn.Module):
         loss = func.binary_cross_entropy_with_logits(
             input=self(x),
             target=(
-                target
-                .expand(len(self.models), -1, -1, -1, -1)
-                .to(dtype=torch.float32, device=x.device)
+                target.expand(len(self.models), -1, -1, -1, -1).to(
+                    dtype=torch.float32, device=x.device
+                )
             ),
             reduction="none",
         )
