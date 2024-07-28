@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from warnings import warn
+
 import torch
 import torch.nn as nn
 
-from warnings import warn
 from dirichlet_ensemble_attunet.attention import SelfAttention
 from dirichlet_ensemble_attunet.basic_blocks import (Down, Plain, Up,
                                                      activation_types)

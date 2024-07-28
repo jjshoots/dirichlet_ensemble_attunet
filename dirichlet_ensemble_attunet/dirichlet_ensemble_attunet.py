@@ -94,6 +94,25 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
         # the output is [B, C, H, W] in {0, 1}
         return (x[0] > x[1]).float().mean(dim=0) >= prediction_threshold
 
+    def compute_uncertainty_map(self, y: torch.Tensor) -> torch.Tensor:
+        """Computes the uncertainty map given the output of the model.
+
+        Args:
+            y (torch.Tensor): y of shape (B, C, H, W) in [0, +inf].
+
+        Returns:
+            torch.Tensor: pixelwise uncertainty of shape (B, C, H, W) in [0, 1].
+        """
+        # uncertainty for an ensemble of 1 is defined as
+        # dimensionality_of_prediction / total_evidence
+        # since this is a pos_neg ensemble, our dimensionality_of_prediction = 2
+        # the shape here is (num_ensemble, B, C, H, W)
+        uncertainty = 2.0 / y.sum(dim=0)
+
+        # then, we just take the max over the num_ensemble and B dimensions
+        # the resulting shape is (B, C, H, W)
+        return uncertainty.max(dim=0)[0]
+
     def compute_pixelwise_loss(
         self,
         x: torch.Tensor,
@@ -117,7 +136,7 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
             target.dtype == torch.bool
         ), f"The target should be a boolean tensor, got {target.dtype}."
 
-        # the output of this is [pos_neg, num_ensemble, B, C, H, W] in [0, +inf]
+        # the output of this is (pos_neg, num_ensemble, B, C, H, W) in [0, +inf]
         y = self(x)
 
         # compute the scale for biasing positive against negative predictions
@@ -129,7 +148,7 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
         evidence_scale = torch.clamp(evidence_scale, 0.0, 25565.0).to(target.device)
 
         # fmt: off
-        # the ensemble loss is [num_ensemble, B, C, H, W]
+        # the ensemble loss is (num_ensemble, B, C, H, W)
         ensemble_loss = (
             # this serves to keep evidence low
             torch.log(y[0] + y[1])
@@ -140,5 +159,5 @@ class DirichletEnsembleAttUNet(EnsembleAttUNet):
         )
         # fmt: on
 
-        # take the mean over the ensemble dimension, the resulting output is [B, C, H, W]
+        # take the mean over the ensemble dimension, the resulting output is (B, C, H, W)
         return torch.mean(ensemble_loss, dim=0)
