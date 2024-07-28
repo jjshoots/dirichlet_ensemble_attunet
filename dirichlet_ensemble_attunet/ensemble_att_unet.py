@@ -102,7 +102,7 @@ class EnsembleAttUNet(nn.Module):
         Returns:
             torch.Tensor: pixelwise uncertainty of shape (B, C, H, W) in [0, 1].
         """
-        assert self.y.shape[0] > 1, "Can't perform uncertainty calculation with only 1 ensemble!"
+        assert y.shape[0] > 1, "Can't perform uncertainty calculation with only 1 ensemble!"
 
         # convert each model in the ensemble's prediction to one hot
         one_hots = torch.stack(
