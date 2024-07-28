@@ -166,14 +166,15 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "jj-wingman"
-version = "0.7.1"
+version = "0.15.4"
 description = "Wingman library for AI projects."
 category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.9"
 
 [package.dependencies]
 numpy = "*"
+prefetch-generator = "*"
 pyyaml = "*"
 wandb = "*"
 
@@ -367,6 +368,14 @@ python-versions = ">=3.8"
 [package.extras]
 dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
+
+[[package]]
+name = "prefetch-generator"
+version = "1.0.3"
+description = "a simple tool to compute arbitrary generator in a background thread"
+category = "main"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "protobuf"
@@ -640,7 +649,7 @@ sweeps = ["sweeps (>=0.2.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "6e168d290eaf211e3376d9dbdb12b21a0445b8deee29f3e3f8b5b12a3ff54ebe"
+content-hash = "2f4f5fae669e42e19c676b3e69e1a927b9826c7c1bacf51b85ff6f05eb490180"
 
 [metadata.files]
 appdirs = []
@@ -677,6 +686,7 @@ nvidia-nvtx-cu12 = []
 opencv-python = []
 packaging = []
 pluggy = []
+prefetch-generator = []
 protobuf = []
 psutil = []
 pytest = []

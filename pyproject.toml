@@ -8,7 +8,7 @@ authors = ["Jet <taijunjet@hotmail.com>"]
 python = "^3.10"
 python-dotenv = "^1.0.1"
 torch = "^2.2.2"
-jj-wingman = "^0.7.1"
+jj-wingman = "^0.15.4"
 opencv-python = "^4.9.0"
 
 [tool.poetry.dev-dependencies]
