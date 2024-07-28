@@ -35,7 +35,6 @@ class AttUNet(nn.Module):
         assert in_channels > 0
         assert out_channels > 0
         assert all([c > 0 for c in inner_channels])
-        assert att_num_layers > 0
         super().__init__()
 
         # size of image must be multiples of this number
@@ -60,7 +59,7 @@ class AttUNet(nn.Module):
             )
 
         # init attention modules
-        if att_num_heads > 0:
+        if att_num_heads > 0 and att_num_layers > 0:
             self.attention = nn.Sequential(
                 *(
                     SelfAttention(
