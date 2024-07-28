@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as func
 
 from dirichlet_ensemble_attunet.att_unet import AttUNet
 from dirichlet_ensemble_attunet.basic_blocks import activation_types
@@ -62,3 +63,26 @@ class EnsembleAttUNet(nn.Module):
         """
         # output here is [num_ensemble, B, C, H, W]
         return torch.stack([f(x) for f in self.models], dim=0)
+
+    def compute_pixelwise_loss(
+        self,
+        x: torch.Tensor,
+        target: torch.Tensor,
+        peak_distance: float = 0.0,
+    ) -> torch.Tensor:
+        """Computes a pixelwise loss against a target using a binary cross entropy loss.
+
+        Args:
+            x (torch.Tensor): input of shape (B, C, H, W).
+            target (torch.Tensor): boolean target of shape (B, C, H, W).
+            peak_distance (float): not used
+
+        Returns:
+            torch.Tensor: pixelwise loss of shape (B, C, H, W).
+        """
+        loss = func.binary_cross_entropy_with_logits(
+            input=self(x),
+            target=target,
+            reduction="none",
+        )
+        return loss.mean(dim=0)
