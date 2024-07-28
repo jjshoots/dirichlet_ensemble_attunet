@@ -3,6 +3,7 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
+from warnings import warn
 from dirichlet_ensemble_attunet.attention import SelfAttention
 from dirichlet_ensemble_attunet.basic_blocks import (Down, Plain, Up,
                                                      activation_types)
@@ -71,6 +72,9 @@ class AttUNet(nn.Module):
                 )
             )
         else:
+            warn(
+                f"No attention modules will be used in this model since {att_num_layers} and {att_num_heads}."
+            )
             self.attention = lambda x: x
 
     def _down(self, x: torch.Tensor) -> tuple[torch.Tensor, list[torch.Tensor]]:
