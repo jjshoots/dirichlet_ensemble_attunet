@@ -97,3 +97,35 @@ def compute_precision_recall_pixel(
     precision = TP / (TP + FP + 1e-6)
     recall = TP / (TP + FN + 1e-6)
     return cpuize(precision), cpuize(recall)
+
+
+def compute_accuracy_pixel(
+    prediction: torch.Tensor, label: torch.Tensor
+) -> np.ndarray:
+    """Computes the pixelwise channel-level accuracy of a prediction against a label.
+
+    Given two equal shaped boolean tensors of shape (C, H, W),
+    computes the accuracy of the prediction against the label along the channel dimension.
+
+    Args:
+        prediction (torch.Tensor): input of shape (C, H, W).
+        label (torch.Tensor): input of shape (C, H, W).
+
+    Returns:
+        tuple[np.ndarray, np.ndarray]: two (C) long vectors for precision and recall.
+    """
+    assert prediction.shape == label.shape
+    assert prediction.dtype == torch.bool
+    assert label.dtype == torch.bool
+    assert len(prediction.shape) == 3
+    assert len(label.shape) == 3
+
+    # compute TP, TN, FP, FN
+    TP = (prediction & label).sum(dim=[-1, -2])
+    TN = (~prediction & ~label).sum(dim=[-1, -2])  # noqa: F841
+    FP = (prediction & ~label).sum(dim=[-1, -2])
+    FN = (~prediction & label).sum(dim=[-1, -2])
+
+    # compute precision recall
+    accuracy = (TP + TN) / (TP + TN + FP + FN + 1e-6)
+    return cpuize(accuracy)
